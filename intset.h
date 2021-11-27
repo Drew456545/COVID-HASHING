@@ -2,9 +2,6 @@
 // Created by Drew Parker on 11/25/21.
 //
 
-
-DocViewer
-        Pages
 #ifndef INTSET_H /* Prevent multiple inclusion... */
 #define INTSET_H
 class Intset {
