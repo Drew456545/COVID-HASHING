@@ -20,9 +20,10 @@ struct probe_info {
     int fp_count, fn_count;
     double error_rate;
 };
-void read_input(void)
+void read_input(string inFile)
 {
-    ifstream input("covid.txt");
+    
+    ifstream input(inFile);
     string label, seq;
     while (input >> label >> seq) N++;
     input.clear();
@@ -45,15 +46,15 @@ void read_input(void)
  */
 bool is_match(int i, int p, int j, int q)
 {
-    int mismatched = 0;
-    if (p<0 || q<0 || p+K-1>=sequence[i].length() || q+K-1>=sequence[j].length())
-        return false;
-    for (int k=0; k<K; k++)
-        if (sequence[i][p+k] != sequence[j][q+k]) {
-            mismatched ++;
-            if (mismatched > 1) return false;
-        }
-    return true;
+     int mismatched = 0;
+  if (p<0 || q<0 || p+K-1>=sequence[i].length() || q+K-1>=sequence[j].length()) 
+    return false;
+  for (int k=0; k<K; k++)
+    if (sequence[i][p+k] != sequence[j][q+k]) {
+      mismatched ++;
+      if (mismatched > 1) return false;
+    }
+  return true;
 }
 /**
  * @param i probe index
@@ -73,22 +74,23 @@ probe_info eval_probe(int i, int p)
     info.fn_count = N_delta;
     Intset matches;
     Location *L = copy_locs(hashlocs[hashes[i][p]]);
+    
     for (Location *Lsecond = hashlocs[hashes[i][p+K-K/2]]; Lsecond != NULL;
-         Lsecond = Lsecond->next)
+       Lsecond = Lsecond->next)
         L = new Location(Lsecond->seq, Lsecond->index+K/2-K, L);
-
+  
     for (Location *loc = L; loc != NULL; loc = loc->next)
         if (!matches.find(loc->seq) && is_match(i,p,loc->seq,loc->index)) {
             matches.insert(loc->seq);
-            if (is_delta[loc->seq]) info.fn_count --;
-            if (!is_delta[loc->seq]) info.fp_count ++;
-        }
+        if (is_delta[loc->seq]) info.fn_count --;
+        if (!is_delta[loc->seq]) info.fp_count ++;
+    }
+    
     free_locs(L);
-
+  
     double FPR = (double)info.fp_count / (N-N_delta);
     double FNR = (double)info.fn_count / N_delta;
     info.error_rate = 2.0 * FPR + 1.0 * FNR;
-    return info;
 }
 /**
  * compute and store the hash of every length-K/2 window in every sequence
@@ -115,16 +117,15 @@ void hash_everything(void)
         }
     }
 }
-int main(void)
+int main(int argc, char* argv[])
 {
-    read_input();
+    read_input(argv[1]);
     hash_everything();
 
     // Loop over all possible probes, remember the best one...
     probe_info best;
     best.error_rate = 99999;
     for (int i=0; i<N; i++) {
-        cerr<< ".";
         if (is_delta[i])
             for (int p=0; p<sequence[i].length()-K+1; p++) {
 // Evaluate probe at position p in sequence[i]
