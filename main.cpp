@@ -91,6 +91,7 @@ probe_info eval_probe(int i, int p)
     double FPR = (double)info.fp_count / (N-N_delta);
     double FNR = (double)info.fn_count / N_delta;
     info.error_rate = 2.0 * FPR + 1.0 * FNR;
+    return info;
 }
 /**
  * compute and store the hash of every length-K/2 window in every sequence
